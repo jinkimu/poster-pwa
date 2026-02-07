@@ -199,6 +199,44 @@
       display: none;
     }
 
+    /* プレビュー表示エリア */
+    .preview-container {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .preview-container.show {
+      display: block;
+    }
+
+    .preview-image-wrapper {
+      background: #fff;
+      border-radius: 12px;
+      padding: 12px;
+      margin: 12px 0;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .preview-image-wrapper img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 8px;
+      -webkit-touch-callout: default;
+    }
+
+    .preview-hint {
+      text-align: center;
+      color: #4a90e2;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 12px;
+      background: #2a2a2a;
+      border-radius: 8px;
+      margin-top: 12px;
+    }
+
     /* フッター */
     .footer {
       text-align: center;
@@ -278,10 +316,19 @@
 
     <!-- ③ 生成ボタン -->
     <button class="action-btn btn-generate" id="generateBtn">
-      ③ 生成して表示
+      ③ 生成
     </button>
 
-    <!-- Canvas表示エリア（非表示・内部処理用） -->
+    <!-- プレビュー表示エリア -->
+    <div class="preview-container" id="previewContainer">
+      <div class="section-title">プレビュー</div>
+      <div class="preview-image-wrapper">
+        <img id="previewImage" alt="生成された大字报">
+      </div>
+      <div class="preview-hint">画像を長押し → 「写真に追加」</div>
+    </div>
+
+    <!-- Canvas（内部処理用・非表示） -->
     <div class="canvas-container" id="canvasContainer" style="display: none;">
       <canvas id="canvas" width="800" height="800"></canvas>
     </div>
@@ -320,6 +367,8 @@
     const generateBtn = document.getElementById('generateBtn');
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
+    const previewContainer = document.getElementById('previewContainer');
+    const previewImage = document.getElementById('previewImage');
 
     // 年のオプション生成（2020-2030）
     const currentYear = new Date().getFullYear();
@@ -532,51 +581,15 @@
         }
       }
 
-      // 画像を別ウィンドウで表示
+      // プレビュー表示
       const dataUrl = canvas.toDataURL('image/png');
-      const w = window.open();
-      w.document.write(`
-        <html>
-          <head>
-            <meta name="viewport" content="width=device-width,initial-scale=1">
-            <meta name="apple-mobile-web-app-capable" content="yes">
-            <title>大字报 - 保存</title>
-            <style>
-              body {
-                margin: 0;
-                background: #000;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                min-height: 100vh;
-                position: relative;
-              }
-              img {
-                max-width: 100%;
-                height: auto;
-                display: block;
-              }
-              p {
-                position: fixed;
-                bottom: 20px;
-                left: 0;
-                right: 0;
-                color: #fff;
-                font-size: 16px;
-                text-align: center;
-                background: rgba(0,0,0,0.8);
-                padding: 12px;
-                margin: 0;
-                font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-              }
-            </style>
-          </head>
-          <body>
-            <img src="${dataUrl}" alt="大字报" />
-            <p>画像を長押し → 「写真に追加」</p>
-          </body>
-        </html>
-      `);
+      previewImage.src = dataUrl;
+      previewContainer.classList.add('show');
+
+      // プレビューまでスクロール
+      setTimeout(() => {
+        previewContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 100);
     }
 
     // ③ 生成ボタン
