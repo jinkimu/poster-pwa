@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dazibao-v2';
+const CACHE_NAME = 'dazibao-v20260208-001';
 const urlsToCache = [
   './',
   './index.html',
