@@ -169,6 +169,26 @@
       color: #666;
     }
 
+    .text-clear-btn {
+      width: 100%;
+      padding: 12px;
+      margin-top: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      background: #3a3a3a;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .text-clear-btn:active {
+      background: #4a4a4a;
+      transform: scale(0.98);
+    }
+
     /* ボタン */
     .action-btn {
       width: 100%;
@@ -312,6 +332,7 @@
         placeholder="今日やること&#10;・入庫処理&#10;・撮影&#10;・発送"
         aria-label="本文テキスト"
       ></textarea>
+      <button class="text-clear-btn" id="textClearBtn">テキストクリア</button>
     </div>
 
     <!-- ③ 生成ボタン -->
@@ -364,6 +385,7 @@
     const todayBtn = document.getElementById('todayBtn');
     const clearDateBtn = document.getElementById('clearDateBtn');
     const textInput = document.getElementById('textInput');
+    const textClearBtn = document.getElementById('textClearBtn');
     const generateBtn = document.getElementById('generateBtn');
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
@@ -446,6 +468,12 @@
       monthSelect.value = '';
       daySelect.value = '';
       updateDateDisplay();
+    });
+
+    // テキストクリアボタン
+    textClearBtn.addEventListener('click', () => {
+      textInput.value = '';
+      textInput.focus();
     });
 
     // セレクト変更時
