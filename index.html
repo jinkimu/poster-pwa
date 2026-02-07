@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="大字报">
+  <meta name="theme-color" content="#1a1a1a">
+  <title>大字报メーカー</title>
+  <link rel="manifest" href="./manifest.json">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+      background: #1a1a1a;
+      color: #fff;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      text-align: center;
+      letter-spacing: 0.05em;
+    }
+
+    .section {
+      background: #252525;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #999;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    /* 日付セクション */
+    .date-controls {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .date-btn {
+      flex: 1;
+      padding: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      background: #3a3a3a;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .date-btn:active {
+      background: #4a4a4a;
+      transform: scale(0.98);
+    }
+
+    .date-selects {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .select-wrapper {
+      flex: 1;
+      position: relative;
+    }
+
+    .select-wrapper::after {
+      content: '▼';
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: #999;
+      font-size: 12px;
+    }
+
+    select {
+      width: 100%;
+      padding: 18px 12px;
+      font-size: 18px;
+      font-weight: 600;
+      border: 2px solid #3a3a3a;
+      border-radius: 10px;
+      background: #2a2a2a;
+      color: #fff;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: #4a90e2;
+    }
+
+    .date-display {
+      padding: 12px;
+      background: #2a2a2a;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: #4a90e2;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .date-display.empty {
+      color: #666;
+      font-size: 16px;
+      font-weight: 400;
+    }
+
+    /* テキスト入力 */
+    textarea {
+      width: 100%;
+      min-height: 200px;
+      padding: 18px;
+      font-size: 18px;
+      line-height: 1.6;
+      border: 2px solid #3a3a3a;
+      border-radius: 12px;
+      background: #2a2a2a;
+      color: #fff;
+      resize: vertical;
+      font-family: inherit;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: #4a90e2;
+    }
+
+    textarea::placeholder {
+      color: #666;
+    }
+
+    /* ボタン */
+    .action-btn {
+      width: 100%;
+      padding: 20px;
+      font-size: 18px;
+      font-weight: 700;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      -webkit-tap-highlight-color: transparent;
+      letter-spacing: 0.05em;
+    }
+
+    .btn-generate {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      margin-bottom: 12px;
+    }
+
+    .btn-generate:active {
+      transform: scale(0.98);
+      opacity: 0.9;
+    }
+
+    .btn-save {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: #fff;
+    }
+
+    .btn-save:active {
+      transform: scale(0.98);
+      opacity: 0.9;
+    }
+
+    .btn-save:disabled {
+      background: #3a3a3a;
+      color: #666;
+      cursor: not-allowed;
+    }
+
+    /* Canvas */
+    #canvas {
+      display: block;
+      width: 100%;
+      border-radius: 12px;
+      background: #fff;
+      margin-top: 12px;
+    }
+
+    .canvas-container {
+      display: none;
+    }
+
+    .canvas-container.show {
+      display: block;
+    }
+
+    /* フッター */
+    .footer {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+      font-size: 13px;
+    }
+
+    .install-prompt {
+      background: #2a2a2a;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+      text-align: center;
+      font-size: 14px;
+      color: #999;
+      display: none;
+    }
+
+    .install-prompt.show {
+      display: block;
+    }
+
+    .install-prompt strong {
+      color: #4a90e2;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📋 大字报メーカー</h1>
+
+    <!-- PWAインストール案内 -->
+    <div class="install-prompt" id="installPrompt">
+      <strong>ホーム画面に追加</strong>して<br>アプリのように使えます
+    </div>
+
+    <!-- ① 日付入力 -->
+    <div class="section">
+      <div class="section-title">① 日付</div>
+      
+      <div class="date-controls">
+        <button class="date-btn" id="todayBtn">今日</button>
+        <button class="date-btn" id="clearDateBtn">日付クリア</button>
+      </div>
+
+      <div class="date-selects">
+        <div class="select-wrapper">
+          <select id="yearSelect" aria-label="年">
+            <option value="">年</option>
+          </select>
+        </div>
+        <div class="select-wrapper">
+          <select id="monthSelect" aria-label="月">
+            <option value="">月</option>
+          </select>
+        </div>
+        <div class="select-wrapper">
+          <select id="daySelect" aria-label="日">
+            <option value="">日</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="date-display empty" id="dateDisplay">日付未指定</div>
+    </div>
+
+    <!-- ② テキスト入力 -->
+    <div class="section">
+      <div class="section-title">② テキスト</div>
+      <textarea 
+        id="textInput" 
+        placeholder="今日やること&#10;・入庫処理&#10;・撮影&#10;・発送"
+        aria-label="本文テキスト"
+      ></textarea>
+    </div>
+
+    <!-- ③ 生成ボタン -->
+    <button class="action-btn btn-generate" id="generateBtn">
+      ③ 生成
+    </button>
+
+    <!-- Canvas表示エリア -->
+    <div class="canvas-container" id="canvasContainer">
+      <canvas id="canvas" width="800" height="800"></canvas>
+    </div>
+
+    <!-- ④ 保存ボタン -->
+    <button class="action-btn btn-save" id="saveBtn" disabled>
+      ④ 画像を開く
+    </button>
+
+    <div class="footer">
+      iPhone Safari で「ホーム画面に追加」すると<br>
+      アプリのように使えます
+    </div>
+  </div>
+
+  <script>
+    // PWA登録
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js')
+        .then(() => console.log('Service Worker registered'))
+        .catch(err => console.log('Service Worker registration failed', err));
+    }
+
+    // インストール案内表示
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches 
+                      || window.navigator.standalone 
+                      || document.referrer.includes('android-app://');
+    
+    if (!isStandalone) {
+      document.getElementById('installPrompt').classList.add('show');
+    }
+
+    // 要素取得
+    const yearSelect = document.getElementById('yearSelect');
+    const monthSelect = document.getElementById('monthSelect');
+    const daySelect = document.getElementById('daySelect');
+    const dateDisplay = document.getElementById('dateDisplay');
+    const todayBtn = document.getElementById('todayBtn');
+    const clearDateBtn = document.getElementById('clearDateBtn');
+    const textInput = document.getElementById('textInput');
+    const generateBtn = document.getElementById('generateBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const canvas = document.getElementById('canvas');
+    const canvasContainer = document.getElementById('canvasContainer');
+    const ctx = canvas.getContext('2d');
+
+    // 年のオプション生成（2020-2030）
+    const currentYear = new Date().getFullYear();
+    for (let year = currentYear - 5; year <= currentYear + 5; year++) {
+      const option = document.createElement('option');
+      option.value = year;
+      option.textContent = year + '年';
+      yearSelect.appendChild(option);
+    }
+
+    // 月のオプション生成
+    for (let month = 1; month <= 12; month++) {
+      const option = document.createElement('option');
+      option.value = month;
+      option.textContent = month + '月';
+      monthSelect.appendChild(option);
+    }
+
+    // 日のオプション生成
+    function updateDayOptions() {
+      const year = parseInt(yearSelect.value);
+      const month = parseInt(monthSelect.value);
+      
+      daySelect.innerHTML = '<option value="">日</option>';
+      
+      if (!year || !month) {
+        for (let day = 1; day <= 31; day++) {
+          const option = document.createElement('option');
+          option.value = day;
+          option.textContent = day + '日';
+          daySelect.appendChild(option);
+        }
+        return;
+      }
+
+      const daysInMonth = new Date(year, month, 0).getDate();
+      for (let day = 1; day <= daysInMonth; day++) {
+        const option = document.createElement('option');
+        option.value = day;
+        option.textContent = day + '日';
+        daySelect.appendChild(option);
+      }
+    }
+
+    updateDayOptions();
+
+    // 日付表示更新
+    function updateDateDisplay() {
+      const year = yearSelect.value;
+      const month = monthSelect.value;
+      const day = daySelect.value;
+
+      if (year && month && day) {
+        dateDisplay.textContent = `${year}.${String(month).padStart(2, '0')}.${String(day).padStart(2, '0')}`;
+        dateDisplay.classList.remove('empty');
+      } else {
+        dateDisplay.textContent = '日付未指定';
+        dateDisplay.classList.add('empty');
+      }
+    }
+
+    // 今日ボタン
+    todayBtn.addEventListener('click', () => {
+      const today = new Date();
+      yearSelect.value = today.getFullYear();
+      monthSelect.value = today.getMonth() + 1;
+      updateDayOptions();
+      daySelect.value = today.getDate();
+      updateDateDisplay();
+    });
+
+    // 日付クリアボタン
+    clearDateBtn.addEventListener('click', () => {
+      yearSelect.value = '';
+      monthSelect.value = '';
+      daySelect.value = '';
+      updateDateDisplay();
+    });
+
+    // セレクト変更時
+    yearSelect.addEventListener('change', () => {
+      updateDayOptions();
+      updateDateDisplay();
+    });
+    monthSelect.addEventListener('change', () => {
+      updateDayOptions();
+      updateDateDisplay();
+    });
+    daySelect.addEventListener('change', updateDateDisplay);
+
+    // Canvas描画関数
+    function drawDazibao() {
+      const text = textInput.value.trim();
+      if (!text) {
+        alert('テキストを入力してください');
+        return;
+      }
+
+      // Canvas クリア
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, 800, 800);
+
+      // 外枠
+      ctx.strokeStyle = '#dddddd';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(20, 20, 760, 760, 20);
+      ctx.stroke();
+
+      let currentY = 80;
+
+      // 日付表示（指定されている場合のみ）
+      const year = yearSelect.value;
+      const month = monthSelect.value;
+      const day = daySelect.value;
+
+      if (year && month && day) {
+        const dateStr = `${year}.${String(month).padStart(2, '0')}.${String(day).padStart(2, '0')}`;
+        ctx.fillStyle = '#666666';
+        ctx.font = 'bold 32px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(dateStr, 400, currentY);
+        currentY += 80;
+      } else {
+        currentY += 20;
+      }
+
+      // テキスト描画（自動サイズ調整）
+      const lines = text.split('\n');
+      const maxWidth = 720;
+      const lineHeight = 1.5;
+
+      // フォントサイズを計算
+      let fontSize = 72;
+      const minFontSize = 26;
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#000000';
+
+      // 適切なフォントサイズを探す
+      while (fontSize >= minFontSize) {
+        ctx.font = `bold ${fontSize}px sans-serif`;
+        
+        let totalHeight = currentY;
+        let allFit = true;
+
+        for (const line of lines) {
+          if (!line.trim()) {
+            totalHeight += fontSize * lineHeight * 0.5;
+            continue;
+          }
+
+          const words = line.split('');
+          let currentLine = '';
+          let lineCount = 0;
+
+          for (const word of words) {
+            const testLine = currentLine + word;
+            const metrics = ctx.measureText(testLine);
+            
+            if (metrics.width > maxWidth && currentLine) {
+              lineCount++;
+              currentLine = word;
+            } else {
+              currentLine = testLine;
+            }
+          }
+          if (currentLine) lineCount++;
+
+          totalHeight += fontSize * lineHeight * lineCount;
+        }
+
+        if (totalHeight <= 750) {
+          break;
+        }
+
+        fontSize -= 2;
+      }
+
+      // 実際に描画
+      ctx.font = `bold ${fontSize}px sans-serif`;
+      let y = currentY;
+
+      for (const line of lines) {
+        if (!line.trim()) {
+          y += fontSize * lineHeight * 0.5;
+          continue;
+        }
+
+        const words = line.split('');
+        let currentLine = '';
+        let x = 60;
+
+        for (const word of words) {
+          const testLine = currentLine + word;
+          const metrics = ctx.measureText(testLine);
+          
+          if (metrics.width > maxWidth && currentLine) {
+            ctx.fillText(currentLine, x, y);
+            y += fontSize * lineHeight;
+            currentLine = word;
+          } else {
+            currentLine = testLine;
+          }
+        }
+
+        if (currentLine) {
+          ctx.fillText(currentLine, x, y);
+          y += fontSize * lineHeight;
+        }
+      }
+
+      // Canvas表示
+      canvasContainer.classList.add('show');
+      saveBtn.disabled = false;
+
+      // Canvasまでスクロール
+      setTimeout(() => {
+        canvasContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 100);
+    }
+
+    // ③ 生成ボタン
+    generateBtn.addEventListener('click', drawDazibao);
+
+    // ④ 画像を開くボタン
+    saveBtn.addEventListener('click', () => {
+      canvas.toBlob(blob => {
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+      });
+    });
+
+    // CanvasRenderingContext2D.roundRect のポリフィル（古いブラウザ対応）
+    if (!CanvasRenderingContext2D.prototype.roundRect) {
+      CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
+        this.moveTo(x + radius, y);
+        this.lineTo(x + width - radius, y);
+        this.quadraticCurveTo(x + width, y, x + width, y + radius);
+        this.lineTo(x + width, y + height - radius);
+        this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        this.lineTo(x + radius, y + height);
+        this.quadraticCurveTo(x, y + height, x, y + height - radius);
+        this.lineTo(x, y + radius);
+        this.quadraticCurveTo(x, y, x + radius, y);
+      };
+    }
+  </script>
+</body>
+</html>
